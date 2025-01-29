@@ -1,15 +1,24 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-const MONGO_URL: string = "mongodb+srv://mnowacki:lr2BXSEPYdUGxp7y@comunicator.on18e.mongodb.net/?retryWrites=true&w=majority&appName=COMUNICATOR"
+
 
 @Module({
-  imports: [MongooseModule.forRoot(MONGO_URL),
-    UsersModule
-  ],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: "postgres",
+      host: "localhost",
+      port: 5432,
+      username: "postgres",
+      password: "password",
+      database: "Users",
+      entities:[],
+      synchronize: false
+    }),
+    UsersModule],
   controllers: [AppController],
   providers: [AppService],
 })
