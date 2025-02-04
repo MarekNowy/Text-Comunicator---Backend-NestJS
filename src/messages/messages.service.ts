@@ -1,7 +1,13 @@
-import { Injectable, Res } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  Res,
+} from '@nestjs/common';
 import { MessagesEntity } from './messages.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class MessagesService {
@@ -10,38 +16,35 @@ export class MessagesService {
     private messagesRepository: Repository<MessagesEntity>,
   ) {}
 
-  async sendMessage(receiverId: number, senderId: number, content: string) {
+  async sendMessage(receiverId: UUID, senderId: UUID, content: string) {
+    try {
+      const newMessage = this.messagesRepository.create({
+        receiverId: receiverId,
+        senderId: senderId,
+        content: content,
+      });
 
-    try{
-    const newMessage = new MessagesEntity();
-    newMessage.receiverId = receiverId;
-    newMessage.senderId = senderId;
-    newMessage.content = content;
-    newMessage.sentAt = new Date();
-
-    const sentMessage = await this.messagesRepository.save(newMessage);
-    return sentMessage;
-    } catch (error){
-      throw new Error("failed to send message")
+      const sentMessage = await this.messagesRepository.save(newMessage);
+      return sentMessage;
+    } catch (error) {
+      throw new BadRequestException();
     }
   }
 
-  async showMessages(receiverId: number, senderId:number){
-    try{
-    const messagesToGet = await this.messagesRepository.find({
+  async showMessages(receiverId: UUID, senderId: UUID) {
+    try {
+      const messagesToGet = await this.messagesRepository.find({
         where: {
-            receiverId: receiverId,
-            senderId: senderId
-        }
-    })
-    messagesToGet.sort(function(a,b){
-    return b.sentAt.getTime() - a.sentAt.getTime()
-    })
-    return messagesToGet;
-  } catch(error){
-    throw new Error("failed to show messages")
-  }
-
-    
+          receiverId: receiverId,
+          senderId: senderId,
+        },
+        order: {
+          sentAt: 'DESC',
+        },
+      });
+      return messagesToGet;
+    } catch (error) {
+      throw new ForbiddenException();
+    }
   }
 }

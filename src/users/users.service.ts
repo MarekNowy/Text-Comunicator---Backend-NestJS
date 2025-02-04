@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './users.entity';
 import { Repository } from 'typeorm';
-import { validate } from 'class-validator';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -13,43 +17,28 @@ export class UsersService {
   ) {}
 
   async create(nickName: string, email: string, password: string) {
-    const newUser = new UserEntity();
-    newUser.nickName = nickName;
-    newUser.email = email;
-    newUser.password = password;
 
-    const errors = await validate(newUser);
+    const newUser = this.userRepository.create({
+      nickName: nickName,
+      email: email,
+      password: password
+    });
 
     newUser.password = await bcrypt.hash(password, 10);
-
-    if (errors.length > 0) {
-      throw new Error('validation failed!');
-    }
 
     const emailExist = await this.userRepository.findOne({
       where: [{ email: newUser.email }],
     });
-    const nickNameExist = await this.userRepository.findOne({
-      where: [{ nickName: newUser.nickName }],
-    });
-
     if (emailExist) {
-      throw new Error('Email already exist');
+      throw new ConflictException('Email already exist');
     }
-    if (nickNameExist) {
-      throw new Error('NickName already exist');
-    }
-
     return this.userRepository.save(newUser);
   }
 
-  async login(loginData: string, password: string) {
-    const checkDataValidity = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.nickName = :loginData OR user.email = :loginData', {
-        loginData,
-      })
-      .getOne();
+  async login(email: string, password: string) {
+    const checkDataValidity = await this.userRepository.findOne({
+      where: [{ email: email }],
+    });
 
     const isPasswordValid: boolean = await bcrypt.compare(
       password,
@@ -57,39 +46,32 @@ export class UsersService {
     );
 
     if (isPasswordValid) {
-      return console.log('login succesful');
+      return 'login succesful';
     } else {
-      throw new Error('Invalid login data');
+      throw new ForbiddenException("Invalid login data");
     }
   }
 
   async deleteAccount(nickName: string, email: string, password: string) {
-    const userToRemove = await this.userRepository
-      .createQueryBuilder('user')
-      .where('user.nickName = :nickName AND user.email = :email', {
-        nickName,
-        email,
-      })
-      .getOne();
+    try {
+      const userToRemove = await this.userRepository.findOne({
+        where: {
+          nickName: nickName,
+          email: email,
+        },
+      });
 
-    const areSamePasswords: boolean = await bcrypt.compare(
-      password,
-      userToRemove?.password,
-    );
+      const areSamePasswords: boolean = await bcrypt.compare(
+        password,
+        userToRemove?.password,
+      );
 
-    if (areSamePasswords) {
-      const result = await this.userRepository
-        .createQueryBuilder()
-        .delete()
-        .where('nickName = :nickName', { nickName })
-        .andWhere('email = :email', { email })
-        .execute();
-
-      if (result.affected === 0) {
-        return 'problem';
-      } else {
-        return 'removed';
+      if (areSamePasswords) {
+        this.userRepository.delete({ id: userToRemove?.id });
+        return 'User removed';
       }
+    } catch (error) {
+      if (error) throw new UnauthorizedException('Invalid user data');
     }
   }
 }

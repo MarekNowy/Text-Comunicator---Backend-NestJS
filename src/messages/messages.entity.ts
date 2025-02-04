@@ -1,15 +1,23 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { UUID } from 'crypto';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  Index,
+} from 'typeorm';
 
 @Entity('messages_entity')
+@Index(['receiverId', 'senderId'])
 export class MessagesEntity {
-  @PrimaryGeneratedColumn()
-  Id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: UUID;
   @Column()
-  receiverId: number;
+  receiverId: UUID;
   @Column()
-  senderId: number;
+  senderId: UUID;
   @Column()
   content: string;
-  @Column()
+  @CreateDateColumn({ type: 'timestamptz' })
   sentAt: Date;
 }
