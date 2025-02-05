@@ -1,8 +1,6 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
-  Res,
 } from '@nestjs/common';
 import { MessagesEntity } from './messages.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -44,7 +42,7 @@ export class MessagesService {
       });
       return messagesToGet;
     } catch (error) {
-      throw new ForbiddenException();
+      throw new BadRequestException();
     }
   }
 }

@@ -17,11 +17,10 @@ export class UsersService {
   ) {}
 
   async create(nickName: string, email: string, password: string) {
-
     const newUser = this.userRepository.create({
       nickName: nickName,
       email: email,
-      password: password
+      password: password,
     });
 
     newUser.password = await bcrypt.hash(password, 10);
@@ -48,7 +47,7 @@ export class UsersService {
     if (isPasswordValid) {
       return 'login succesful';
     } else {
-      throw new ForbiddenException("Invalid login data");
+      throw new ForbiddenException('Invalid login data');
     }
   }
 
