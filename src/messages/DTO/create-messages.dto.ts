@@ -18,7 +18,7 @@ export class CreateMessagesDto {
   @ApiProperty({
     description: 'Not empty message content',
     example: 'Here is an example message',
-    type: [String],
+    type: String,
   })
   @IsNotEmpty()
   @IsString()

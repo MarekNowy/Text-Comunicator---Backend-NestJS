@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { MessagesEntity } from './messages.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,11 +22,14 @@ export class MessagesService {
         senderId: senderId,
         content: content,
       });
-
       const sentMessage = await this.messagesRepository.save(newMessage);
       return sentMessage;
     } catch (error) {
-      throw new BadRequestException();
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException();
+      } else {
+        throw new InternalServerErrorException();
+      }
     }
   }
 
@@ -42,7 +46,11 @@ export class MessagesService {
       });
       return messagesToGet;
     } catch (error) {
-      throw new BadRequestException();
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException();
+      } else {
+        throw new InternalServerErrorException();
+      }
     }
   }
 }

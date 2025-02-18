@@ -1,12 +1,16 @@
-import { Body, Controller} from '@nestjs/common';
+import { Body, Controller, Get, Param } from '@nestjs/common';
 import { Post } from '@nestjs/common';
 import { CreateMessagesDto } from './DTO/create-messages.dto';
 import { MessagesService } from './messages.service';
 import { UUID } from 'crypto';
 import {
+  ReceiverIdParam,
+  SenderIdParam,
+} from './ExampleDataSwagger/exampleSenderReceiver';
+import {
   ApiBadRequestResponse,
-  ApiBody,
   ApiOperation,
+  ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
 import { MessagesEntity } from './messages.entity';
@@ -23,7 +27,7 @@ export class MessagesController {
   @ApiResponse({
     status: 200,
     description: 'Message has been sent successfully',
-    type: [MessagesEntity],
+    type: MessagesEntity,
     isArray: true,
   })
   @ApiBadRequestResponse({
@@ -37,7 +41,7 @@ export class MessagesController {
     );
   }
 
-  @Post('/show')
+  @Get(':receiverId/:senderId')
   @ApiOperation({ summary: 'Show messages' })
   @ApiResponse({
     status: 200,
@@ -46,23 +50,12 @@ export class MessagesController {
   @ApiBadRequestResponse({
     description: 'Invalid receiver or sender ID',
   })
-  @ApiBody({
-    description: 'Data for display the messages',
-    schema: {
-      type: 'object',
-      properties: {
-        receiverId: {
-          type: 'UUID',
-          example: '7c5b801a-dd56-429d-86de-0df563368292',
-        },
-        senderId: {
-          type: 'UUID',
-          example: '0daca3f6-094e-4340-b1bf-18ed2329c2f9',
-        },
-      },
-    },
-  })
-  showMessage(@Body() data: { receiverId: UUID; senderId: UUID }) {
-    return this.messagesService.showMessages(data.receiverId, data.senderId);
+  @ApiParam(ReceiverIdParam)
+  @ApiParam(SenderIdParam)
+  showMessage(
+    @Param('senderId') senderId: UUID,
+    @Param('receiverId') receiverId: UUID,
+  ) {
+    return this.messagesService.showMessages(senderId, receiverId);
   }
 }

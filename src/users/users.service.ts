@@ -1,13 +1,17 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './users.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { ChangeNickNameDto } from './DTO/change-nickName.dto';
 
 @Injectable()
 export class UsersService {
@@ -17,13 +21,12 @@ export class UsersService {
   ) {}
 
   async create(nickName: string, email: string, password: string) {
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = this.userRepository.create({
       nickName: nickName,
       email: email,
-      password: password,
+      passwordHash: hashedPassword
     });
-
-    newUser.password = await bcrypt.hash(password, 10);
 
     const emailExist = await this.userRepository.findOne({
       where: [{ email: newUser.email }],
@@ -39,9 +42,9 @@ export class UsersService {
       where: [{ email: email }],
     });
 
-    const isPasswordValid: boolean = await bcrypt.compare(
+      const isPasswordValid: boolean = await bcrypt.compare(
       password,
-      checkDataValidity?.password,
+      checkDataValidity?.passwordHash,
     );
 
     if (isPasswordValid) {
@@ -51,26 +54,41 @@ export class UsersService {
     }
   }
 
-  async deleteAccount(nickName: string, email: string, password: string) {
-    try {
-      const userToRemove = await this.userRepository.findOne({
-        where: {
-          nickName: nickName,
-          email: email,
-        },
-      });
+  async deleteAccount(email: string, password: string) {
+    const userToRemove = await this.userRepository.findOne({
+      where: {
+        email: email,
+      },
+    });
 
-      const areSamePasswords: boolean = await bcrypt.compare(
-        password,
-        userToRemove?.password,
-      );
-
-      if (areSamePasswords) {
-        this.userRepository.delete({ id: userToRemove?.id });
-        return 'User removed';
-      }
-    } catch (error) {
-      if (error) throw new UnauthorizedException('Invalid user data');
+    if (!userToRemove) {
+      throw new NotFoundException();
     }
+    const areSamePasswords: boolean = await bcrypt.compare(
+      password,
+      userToRemove?.passwordHash,
+    );
+
+    if (!areSamePasswords) {
+      throw new BadRequestException();
+    }
+    await this.userRepository.delete({ id: userToRemove?.id });
+  }
+
+  async changeNickName(newNickName: string, email: string) {
+    const userToUpdate = await this.userRepository.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (!userToUpdate) {
+      throw new NotFoundException();
+    }
+    if (userToUpdate.nickName === newNickName) {
+      throw new ConflictException();
+    }
+    return await this.userRepository.update(userToUpdate.id, {
+      nickName: newNickName,
+    });
   }
 }

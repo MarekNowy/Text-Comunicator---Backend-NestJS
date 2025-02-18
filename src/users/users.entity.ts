@@ -7,8 +7,8 @@ export class UserEntity {
   id: UUID;
   @Column()
   nickName: string;
-  @Column()
+  @Column({unique: true})
   email: string;
   @Column()
-  password: string;
+  passwordHash: string;
 }

@@ -1,16 +1,16 @@
-import {
-  Controller
-} from '@nestjs/common';
-import { Post,  Body, Delete } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { Post, Body, Delete, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUsersDto } from './DTO/create-users.dto';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
   ApiResponse,
-  ApiBody
+  ApiBody,
 } from '@nestjs/swagger';
 import { UserEntity } from './users.entity';
+import { ExampleLogin } from './ExampleData/ExampleUserLogin';
+import { ChangeNickNameDto } from './DTO/change-nickName.dto';
 
 @Controller('users')
 export class UsersController {
@@ -40,27 +40,12 @@ export class UsersController {
   @ApiBadRequestResponse({
     description: 'Invalid login data',
   })
-   @ApiBody({
-      description: 'Data for log in',
-      schema: {
-        type: 'object',
-        properties: {
-          email: {
-            type: 'string',
-            example: 'example@example.com',
-          },
-          password: {
-            type: 'string',
-            example: 'password',
-          },
-        },
-      },
-    })
+  @ApiBody({ type: ExampleLogin })
   login(@Body() data: { email: string; password: string }) {
     return this.userService.login(data.email, data.password);
   }
 
-  @Delete('/remove')
+  @Delete()
   @ApiResponse({
     status: 200,
     description: 'User account removed succesfully',
@@ -69,12 +54,23 @@ export class UsersController {
     description: 'Invalid user data',
   })
   deleteAccouunt(
-    @Body() data: { nickName: string; email: string; password: string },
+    @Body() data: { email: string; password: string },
   ) {
     return this.userService.deleteAccount(
-      data.nickName,
       data.email,
-      data.password,
+      data.password
     );
+  }
+
+  @Patch()
+  @ApiResponse({
+    status: 200,
+    description: 'User nickname updated succesfully',
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid data',
+  })
+  changeNickName(@Body() data: ChangeNickNameDto) {
+    return this.userService.changeNickName(data.newNickName, data.email);
   }
 }
