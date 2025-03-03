@@ -9,6 +9,12 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
 
+  app.enableCors({
+    origin: 'http://localhost:5173',
+    methods: 'GET,POST,PUT,DELETE',
+    allowedHeaders: 'Content-Type, Authorization',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Swagger Test')
     .setDescription('Communicator Api Description')

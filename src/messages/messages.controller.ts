@@ -1,12 +1,9 @@
-import { Body, Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Req, Request } from '@nestjs/common';
 import { Post } from '@nestjs/common';
 import { CreateMessagesDto } from './DTO/create-messages.dto';
 import { MessagesService } from './messages.service';
 import { UUID } from 'crypto';
-import {
-  ReceiverIdParam,
-  SenderIdParam,
-} from './ExampleDataSwagger/exampleSenderReceiver';
+import { InterlocutorIdParam } from './ExampleDataSwagger/exampleSenderReceiver';
 import {
   ApiBadRequestResponse,
   ApiOperation,
@@ -33,29 +30,38 @@ export class MessagesController {
   @ApiBadRequestResponse({
     description: 'Invalid receiver or sender ID',
   })
-  sentMessage(@Body() createMessageDto: CreateMessagesDto) {
+  sentMessage(
+    @Req() request: Request,
+    @Body() createMessageDto: CreateMessagesDto,
+  ) {
     return this.messagesService.sendMessage(
       createMessageDto.receiverId,
-      createMessageDto.senderId,
+      request['user'].sub,
       createMessageDto.content,
     );
   }
 
-  @Get(':receiverId/:senderId')
+  @Get(':interlocutorid')
   @ApiOperation({ summary: 'Show messages' })
   @ApiResponse({
     status: 200,
     description: 'Message has been fetched succesfully',
   })
   @ApiBadRequestResponse({
-    description: 'Invalid receiver or sender ID',
+    description: 'Invalid interlocutor id',
   })
-  @ApiParam(ReceiverIdParam)
-  @ApiParam(SenderIdParam)
+  @ApiParam(InterlocutorIdParam)
   showMessage(
-    @Param('senderId') senderId: UUID,
-    @Param('receiverId') receiverId: UUID,
+    @Param('interlocutorid') interlocutorID: UUID,
+    @Req() request: Request,
   ) {
-    return this.messagesService.showMessages(senderId, receiverId);
+    const myId: UUID = request['user'].sub;
+    return this.messagesService.showMessages(myId, interlocutorID);
+  }
+
+  @Get()
+  getMessages(@Request() req) {
+    const UserId: UUID = req.user.sub;
+    return this.messagesService.getMessages(UserId);
   }
 }

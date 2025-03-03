@@ -1,9 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './users.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { ChangeNickNameDto } from './DTO/change-nickName.dto';
+import { UUID } from 'crypto';
 
 @Injectable()
 export class UsersService {
@@ -20,12 +18,20 @@ export class UsersService {
     private userRepository: Repository<UserEntity>,
   ) {}
 
+  async getInfo(UserId: UUID) {
+    return this.userRepository.findOne({
+      where: {
+        id: UserId,
+      },
+    });
+  }
+
   async create(nickName: string, email: string, password: string) {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword:string = await bcrypt.hash(password, 10);
     const newUser = this.userRepository.create({
       nickName: nickName,
       email: email,
-      passwordHash: hashedPassword
+      passwordHash: hashedPassword,
     });
 
     const emailExist = await this.userRepository.findOne({
@@ -38,19 +44,21 @@ export class UsersService {
   }
 
   async login(email: string, password: string) {
-    const checkDataValidity = await this.userRepository.findOne({
-      where: [{ email: email }],
+    const userToSignIn = await this.userRepository.findOne({
+      where: { email: email },
     });
 
-      const isPasswordValid: boolean = await bcrypt.compare(
+    if (!userToSignIn) {
+      throw new NotFoundException();
+    }
+    const isPasswordValid: boolean = await bcrypt.compare(
       password,
-      checkDataValidity?.passwordHash,
+      userToSignIn?.passwordHash,
     );
-
     if (isPasswordValid) {
-      return 'login succesful';
+      return userToSignIn;
     } else {
-      throw new ForbiddenException('Invalid login data');
+      throw new UnauthorizedException('Invalid login data');
     }
   }
 

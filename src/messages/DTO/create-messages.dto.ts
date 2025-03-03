@@ -10,12 +10,6 @@ export class CreateMessagesDto {
   @IsUUID()
   receiverId: UUID;
   @ApiProperty({
-    description: 'Unique sender ID',
-    example: '4cf1a9cd-9809-499e-8f38-d34ad79b1cbf',
-  })
-  @IsUUID()
-  senderId: UUID;
-  @ApiProperty({
     description: 'Not empty message content',
     example: 'Here is an example message',
     type: String,
