@@ -1,20 +1,18 @@
 import {
   Injectable,
-  UnauthorizedException,
-  UseGuards,
   BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthGuard } from './auth.guard';
-import { use } from 'passport';
 import { console } from 'inspector';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UsersService,
     private jwtService: JwtService,
+    private configService: ConfigService
   ) {}
 
   async signIn(email: string, pass: string): Promise<any> {
@@ -22,19 +20,19 @@ export class AuthService {
     const payLoad = { sub: user.id, username: user.nickName };
     return {
       access_token: await this.jwtService.signAsync(payLoad, {
-        secret: process.env.JWT_SECRET,
-        expiresIn: '7d',
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: this.configService.get<string>('ACCESS_EXPIRES'),
       }),
       refresh_token: await this.jwtService.signAsync(payLoad, {
-        secret: process.env.JWT_SECRET,
-        expiresIn: '7d',
+        secret: this.configService.get<string>('JWT_SECRET'),
+        expiresIn: this.configService.get<string>(`REFRESH_EXPIRES`),
       }),
     };
   }
   async refreshToken(token: string) {
     console.log(token);
     const payload = await this.jwtService.verify(token, {
-      secret: process.env.JWT_SECRET,
+      secret: this.configService.get<string>('JWT_SECRET'),
     });
     const newPayload = { sub: payload.sub, username: payload.username };
     if (!payload) {
@@ -42,11 +40,11 @@ export class AuthService {
     }
     const newAccessToken = await this.jwtService.signAsync(newPayload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: '15s',
+      expiresIn: this.configService.get<string>('ACCESS_EXPIRES')
     });
     const newRefreshToken = await this.jwtService.signAsync(newPayload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: '7d',
+      expiresIn: this.configService.get<string>(`REFRESH_EXPIRES`)
     });
     return newAccessToken;
   }

@@ -68,8 +68,8 @@ export class UsersController {
   @ApiBadRequestResponse({
     description: 'Invalid data',
   })
-  changeNickName(@Body() data: ChangeNickNameDto) {
-    return this.userService.changeNickName(data.newNickName, data.email);
+  changeNickName(@Request() req ,@Body() data: ChangeNickNameDto) {
+    return this.userService.changeNickName(data.newNickName,req.user.sub);
   }
 
   @Get('/getinfo')

@@ -11,11 +11,5 @@ export class ChangeNickNameDto {
   @MinLength(4)
   @MaxLength(14)
   newNickName: string;
-  @ApiProperty({
-    description: 'Email related to account whith nickName you want to change',
-    type: String,
-    example: 'email@example.com',
-  })
-  @IsEmail()
-  email: string;
+  
 }

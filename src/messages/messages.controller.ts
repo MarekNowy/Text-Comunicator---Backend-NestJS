@@ -41,7 +41,7 @@ export class MessagesController {
     );
   }
 
-  @Get(':interlocutorid')
+  @Get('/interlocutors/:interlocutorid')
   @ApiOperation({ summary: 'Show messages' })
   @ApiResponse({
     status: 200,
@@ -60,6 +60,14 @@ export class MessagesController {
   }
 
   @Get()
+  @ApiOperation({summary: 'Show latest messages'})
+  @ApiResponse({
+    status: 200,
+    description: "Messages has been fetched succesfully"
+  })
+  @ApiBadRequestResponse({
+    description: 'Your JWT Token is invalid'
+  })
   getMessages(@Request() req) {
     const UserId: UUID = req.user.sub;
     return this.messagesService.getMessages(UserId);

@@ -8,6 +8,8 @@ import { MessagesModule } from './messages/messages.module';
 import { MessagesEntity } from './messages/messages.entity';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { ChatModule } from './chat/chat.module';
+import { ChatGateway } from './chat/chat-gateway';
 
 @Module({
   imports: [
@@ -25,8 +27,11 @@ import { ConfigModule } from '@nestjs/config';
     UsersModule,
     MessagesModule,
     AuthModule,
+    ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    ChatGateway
+  ],
 })
 export class AppModule {}

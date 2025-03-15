@@ -1,6 +1,6 @@
 import {
-  BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -78,15 +78,15 @@ export class UsersService {
     );
 
     if (!areSamePasswords) {
-      throw new BadRequestException();
+      throw new ForbiddenException();
     }
     await this.userRepository.delete({ id: userToRemove?.id });
   }
 
-  async changeNickName(newNickName: string, email: string) {
+  async changeNickName(newNickName: string, userId: UUID) {
     const userToUpdate = await this.userRepository.findOne({
       where: {
-        email: email,
+        id: userId,
       },
     });
     if (!userToUpdate) {

@@ -47,7 +47,17 @@ export class MessagesService {
           sentAt: 'DESC',
         },
       });
-      return messagesToGet;
+   
+      const partnerId = messagesToGet[0].senderId === myId ? 
+      messagesToGet[0].receiverId : messagesToGet[0].senderId
+  
+     const partner:any = await this.userRepository.findOne({where: {
+      id: partnerId
+     }})
+
+     
+     messagesToGet.push(partner.nickName || "NickName")
+     return messagesToGet;
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw new BadRequestException();
@@ -57,32 +67,38 @@ export class MessagesService {
     }
   }
 
-  async getMessages(UserId: UUID): Promise<any[]> {
-    const messages = await this.messagesRepository.find({
-      where: [{ senderId: UserId }, { receiverId: UserId }],
-      order: {
-        sentAt: 'DESC',
-      },
-    });
-    const lastMessages: any[] = [];
-
-    const uniqueConversation = new Set();
-
-    for (const message of messages) {
-      const partnerId =
-        message.senderId === UserId ? message.receiverId : message.senderId;
-
-      if (!uniqueConversation.has(partnerId)) {
-        const partner = await this.userRepository.findOne({
-          where: {
-            id: partnerId,
-          },
-        });
-
-        lastMessages.push({ ...message, partnerNickName: partner?.nickName });
-        uniqueConversation.add(partnerId);
-      }
+async getMessages(userId: UUID): Promise<any[]>{
+  const messages = await this.messagesRepository.find({
+    where: [
+      { senderId: userId },
+      { receiverId: userId }
+    ],
+    order: {
+      sentAt: 'DESC',  
     }
-    return lastMessages;
+  });
+  
+  const lastMessages: any[] = [];
+
+  const uniqueConversation = new Set();
+
+  for(const message of messages){
+    const partnerId = message.senderId === userId ? message.receiverId : message.senderId
+  
+    if(!uniqueConversation.has(partnerId)){
+      const partner = await this.userRepository.findOne({
+        where: {
+          id: partnerId
+        }
+      })
+      
+      lastMessages.push({...message,
+      partnerId: partnerId,
+      partnerNickName: partner?.nickName})
+      uniqueConversation.add(partnerId)
+    }
   }
+  return lastMessages;
+}  
+
 }
