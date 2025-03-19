@@ -97,6 +97,7 @@ async getMessages(userId: UUID): Promise<any[]>{
       partnerNickName: partner?.nickName})
       uniqueConversation.add(partnerId)
     }
+    
   }
   return lastMessages;
 }  

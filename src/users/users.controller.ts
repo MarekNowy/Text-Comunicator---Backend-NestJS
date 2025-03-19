@@ -85,4 +85,9 @@ export class UsersController {
     const UserId: UUID = req.user.sub; 
     return this.userService.getInfo(UserId); 
   }
+
+  @Post('/showusers')
+  showUsers(@Body() body){
+  return this.userService.showUsers(body.nickName)
+  }
 }

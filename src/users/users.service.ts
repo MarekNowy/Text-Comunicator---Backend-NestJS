@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './users.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UUID } from 'crypto';
 
@@ -98,5 +98,16 @@ export class UsersService {
     return await this.userRepository.update(userToUpdate.id, {
       nickName: newNickName,
     });
+  }
+  async showUsers(nickName: string){
+    if(nickName){
+    const users = await this.userRepository.find({
+      where: {
+        nickName: Like(`${nickName}%`)
+      },
+      select: ['id', 'nickName', 'email']
+    })
+    return users;
+  }
   }
 }
