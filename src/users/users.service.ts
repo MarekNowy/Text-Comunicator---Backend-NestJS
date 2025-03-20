@@ -13,6 +13,7 @@ import { UUID } from 'crypto';
 
 @Injectable()
 export class UsersService {
+
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
@@ -23,6 +24,7 @@ export class UsersService {
       where: {
         id: UserId,
       },
+      select: ['nickName','email','id']
     });
   }
 
@@ -108,6 +110,6 @@ export class UsersService {
       select: ['id', 'nickName', 'email']
     })
     return users;
-  }
-  }
+  }}
+ 
 }

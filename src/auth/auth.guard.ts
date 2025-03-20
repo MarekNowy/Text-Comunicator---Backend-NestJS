@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from './decorator/publicDecorator';
+import { isTokenBlackListed } from './auth.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -27,6 +28,10 @@ export class AuthGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+
+  if(isTokenBlackListed(token as string)){
+      throw new UnauthorizedException();
+    }
     if (!token) {
       throw new UnauthorizedException();
     }
