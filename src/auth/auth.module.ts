@@ -9,17 +9,20 @@ import { ConfigModule } from '@nestjs/config';
 import { UsersService } from 'src/users/users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from 'src/users/users.entity';
+import { MessagesModule } from 'src/messages/messages.module';
+import { MessagesEntity } from 'src/messages/messages.entity';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     UsersModule,
+    MessagesModule,
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '15s' },
     }),
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, MessagesEntity]),
   ],
   controllers: [AuthController],
   providers: [

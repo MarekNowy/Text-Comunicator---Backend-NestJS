@@ -10,6 +10,7 @@ import { UserEntity } from './users.entity';
 import { Like, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UUID } from 'crypto';
+import { MessagesEntity } from 'src/messages/messages.entity';
 
 @Injectable()
 export class UsersService {
@@ -17,6 +18,8 @@ export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+    @InjectRepository(MessagesEntity)
+    private messagesRepository: Repository<MessagesEntity>,
   ) {}
 
   async getInfo(UserId: UUID) {
@@ -64,9 +67,10 @@ export class UsersService {
     }
   }
 
-  async deleteAccount(email: string, password: string) {
+  async deleteAccount(userId:UUID, email: string, password: string) {
     const userToRemove = await this.userRepository.findOne({
       where: {
+        id: userId,
         email: email,
       },
     });
@@ -82,7 +86,18 @@ export class UsersService {
     if (!areSamePasswords) {
       throw new ForbiddenException();
     }
+   
+    try {
+      await this.messagesRepository
+      .createQueryBuilder()
+      .delete()
+      .from(MessagesEntity)
+      .where("senderId = :userId OR receiverId = :userId", { userId })
+      .execute();
     await this.userRepository.delete({ id: userToRemove?.id });
+  } catch(e) {
+    console.log(e)
+  }
   }
 
   async changeNickName(newNickName: string, userId: UUID) {

@@ -35,7 +35,6 @@ export class MessagesService {
       }
     }
   }
-
   async showMessages(myId: UUID, interlocutorId: UUID) {
     try {
       const messagesToGet = await this.messagesRepository.find({
@@ -47,18 +46,13 @@ export class MessagesService {
           sentAt: 'DESC',
         },
       });
-   
-      const partnerId = messagesToGet[0].senderId === myId ? 
-      messagesToGet[0].receiverId : messagesToGet[0].senderId
-  
-     const partner:any = await this.userRepository.findOne({where: {
-      id: partnerId
-     }})
-
-     
-     messagesToGet.push(partner.nickName || "NickName")
-     return messagesToGet;
-    } catch (error) {
+      const partner:any = await this.userRepository.findOne({where: {
+      id: interlocutorId
+      }});
+      messagesToGet.push(partner.nickName || "NickName")
+      return messagesToGet;  
+    }
+      catch (error) {
       if (error instanceof BadRequestException) {
         throw new BadRequestException();
       } else {
