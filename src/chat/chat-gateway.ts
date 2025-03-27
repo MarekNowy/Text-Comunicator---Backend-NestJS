@@ -5,6 +5,7 @@ import { Socket } from "socket.io";
 import { JwtService } from "@nestjs/jwt";
 import { generate } from "rxjs";
 import { MongoMissingCredentialsError } from "typeorm";
+import { use } from "passport";
 
 let userId: UUID 
 let socketId: string
@@ -60,6 +61,7 @@ export class ChatGateway {
     const bothOfUsers: string[] = [receiverSocketId,clientSocketId]
     for(const user of bothOfUsers){
      if(user){ 
+        console.log(user)
         this.server.to(user).emit('message', payload)};
      }}
 

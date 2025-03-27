@@ -3,7 +3,7 @@ import { Post } from '@nestjs/common';
 import { CreateMessagesDto } from './DTO/create-messages.dto';
 import { MessagesService } from './messages.service';
 import { UUID } from 'crypto';
-import { InterlocutorIdParam } from './ExampleDataSwagger/exampleSenderReceiver';
+import { InterlocutorIdParam, PageParam } from './ExampleDataSwagger/exampleSenderReceiver';
 import {
   ApiBadRequestResponse,
   ApiOperation,
@@ -47,8 +47,8 @@ export class MessagesController {
       createMessageDto.content,
     );
   }
-
-  @Get('/interlocutors/:interlocutorid')
+// new endpoint
+  @Get('/interlocutors/:interlocutorid/:page')
   @ApiHeader({
         name: 'Authorization',
         description: 'JWT token required to access this route',
@@ -94,12 +94,14 @@ export class MessagesController {
     description: 'Invalid interlocutor id',
   })
   @ApiParam(InterlocutorIdParam)
+  @ApiParam(PageParam)
   showMessage(
-    @Param('interlocutorid') interlocutorID: UUID,
+    @Param('interlocutorid') interlocutorID: UUID, @Param('page') pageNumber: number,
     @Req() request: Request,
+
   ) {
     const myId: UUID = request['user'].sub;
-    return this.messagesService.showMessages(myId, interlocutorID);
+    return this.messagesService.showMessages(myId, interlocutorID, pageNumber);
   }
 
   @Get()

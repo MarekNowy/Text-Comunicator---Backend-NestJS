@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UUID } from 'crypto';
 import { UserEntity } from 'src/users/users.entity';
+import { skip } from 'rxjs';
 
 @Injectable()
 export class MessagesService {
@@ -35,7 +36,7 @@ export class MessagesService {
       }
     }
   }
-  async showMessages(myId: UUID, interlocutorId: UUID) {
+  async showMessages(myId: UUID, interlocutorId: UUID, pagesNumber: number) {
     try {
       const messagesToGet = await this.messagesRepository.find({
         where: [
@@ -43,9 +44,12 @@ export class MessagesService {
           { receiverId: interlocutorId, senderId: myId },
         ],
         order: {
-          sentAt: 'DESC',
+          sentAt: 'DESC',  
         },
+        skip: pagesNumber * 20,  
+        take: 20,  
       });
+      
       const partner:any = await this.userRepository.findOne({where: {
       id: interlocutorId
       }});
@@ -77,6 +81,7 @@ async getMessages(userId: UUID): Promise<any[]>{
   const uniqueConversation = new Set();
 
   for(const message of messages){
+    if(message.content.length >30) {message.content = message.content.slice(0,30) + "..."} 
     const partnerId = message.senderId === userId ? message.receiverId : message.senderId
   
     if(!uniqueConversation.has(partnerId)){
