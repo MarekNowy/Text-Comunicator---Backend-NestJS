@@ -16,5 +16,5 @@ export const PageParam = {
   name: 'page',
   description: 'how many pages to download, every page has 20 messages',
   type: Number,
-  example: 3
-}
+  example: 3,
+};

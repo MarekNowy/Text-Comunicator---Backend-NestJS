@@ -11,5 +11,4 @@ export class ChangeNickNameDto {
   @MinLength(4)
   @MaxLength(14)
   newNickName: string;
-  
 }

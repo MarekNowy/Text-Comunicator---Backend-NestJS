@@ -6,7 +6,7 @@ import { UserEntity } from './users.entity';
 import { MessagesEntity } from 'src/messages/messages.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity,MessagesEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, MessagesEntity])],
   providers: [UsersService],
   controllers: [UsersController],
   exports: [UsersService],

@@ -44,19 +44,20 @@ export class MessagesService {
           { receiverId: interlocutorId, senderId: myId },
         ],
         order: {
-          sentAt: 'DESC',  
+          sentAt: 'DESC',
         },
-        skip: pagesNumber * 20,  
-        take: 20,  
+        skip: pagesNumber * 20,
+        take: 20,
       });
-      
-      const partner:any = await this.userRepository.findOne({where: {
-      id: interlocutorId
-      }});
-      messagesToGet.push(partner.nickName || "NickName")
-      return messagesToGet;  
-    }
-      catch (error) {
+
+      const partner: any = await this.userRepository.findOne({
+        where: {
+          id: interlocutorId,
+        },
+      });
+      messagesToGet.push(partner.nickName || 'NickName');
+      return messagesToGet;
+    } catch (error) {
       if (error instanceof BadRequestException) {
         throw new BadRequestException();
       } else {
@@ -65,40 +66,40 @@ export class MessagesService {
     }
   }
 
-async getMessages(userId: UUID): Promise<any[]>{
-  const messages = await this.messagesRepository.find({
-    where: [
-      { senderId: userId },
-      { receiverId: userId }
-    ],
-    order: {
-      sentAt: 'DESC',  
-    }
-  });
-  
-  const lastMessages: any[] = [];
+  async getMessages(userId: UUID): Promise<any[]> {
+    const messages = await this.messagesRepository.find({
+      where: [{ senderId: userId }, { receiverId: userId }],
+      order: {
+        sentAt: 'DESC',
+      },
+    });
 
-  const uniqueConversation = new Set();
+    const lastMessages: any[] = [];
 
-  for(const message of messages){
-    if(message.content.length >30) {message.content = message.content.slice(0,30) + "..."} 
-    const partnerId = message.senderId === userId ? message.receiverId : message.senderId
-  
-    if(!uniqueConversation.has(partnerId)){
-      const partner = await this.userRepository.findOne({
-        where: {
-          id: partnerId
-        }
-      })
-      
-      lastMessages.push({...message,
-      partnerId: partnerId,
-      partnerNickName: partner?.nickName})
-      uniqueConversation.add(partnerId)
+    const uniqueConversation = new Set();
+
+    for (const message of messages) {
+      if (message.content.length > 30) {
+        message.content = message.content.slice(0, 30) + '...';
+      }
+      const partnerId =
+        message.senderId === userId ? message.receiverId : message.senderId;
+
+      if (!uniqueConversation.has(partnerId)) {
+        const partner = await this.userRepository.findOne({
+          where: {
+            id: partnerId,
+          },
+        });
+
+        lastMessages.push({
+          ...message,
+          partnerId: partnerId,
+          partnerNickName: partner?.nickName,
+        });
+        uniqueConversation.add(partnerId);
+      }
     }
-    
+    return lastMessages;
   }
-  return lastMessages;
-}  
-
 }

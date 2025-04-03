@@ -1,6 +1,11 @@
 import { IsOptional } from 'class-validator';
 import { UUID } from 'crypto';
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+} from 'typeorm';
 
 @Entity('user_entity')
 export class UserEntity {
@@ -12,4 +17,6 @@ export class UserEntity {
   email: string;
   @Column()
   passwordHash: string;
+  @CreateDateColumn({ type: 'timestamptz' })
+  registerAt: Date;
 }

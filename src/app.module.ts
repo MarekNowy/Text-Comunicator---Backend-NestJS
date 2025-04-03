@@ -32,6 +32,6 @@ import { MessagesService } from './messages/messages.service';
     ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService]
+  providers: [AppService],
 })
 export class AppModule {}

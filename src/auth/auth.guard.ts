@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
 
-  if(isTokenBlackListed(token as string)){
+    if (isTokenBlackListed(token as string)) {
       throw new UnauthorizedException();
     }
     if (!token) {
