@@ -80,4 +80,9 @@ export class ChatGateway {
       }
     }
   }
+  @SubscribeMessage('removeAccount')
+  handleRemoveAccount(@MessageBody() body){
+    const removeId = body.accountId;
+    this.server.emit('removeAccount', removeId);
+  }
 }
