@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UUID } from 'crypto';
 import { UserEntity } from 'src/users/users.entity';
-import { skip } from 'rxjs';
 
 @Injectable()
 export class MessagesService {

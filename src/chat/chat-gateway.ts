@@ -11,7 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 
 let userId: UUID;
 let socketId: string;
-let userIdSocketId = new Map();
+const userIdSocketId = new Map();
 
 interface Payload {
   id: UUID;
@@ -24,7 +24,7 @@ interface Payload {
 }
 
 const findKeyFromValue = (map: Map<UUID, string>, value: any) => {
-  for (let [key, val] of map) {
+  for (const [key, val] of map) {
     if (val === value) {
       return key;
     }
@@ -39,22 +39,21 @@ export class ChatGateway {
 
   handleConnection(client: Socket): void {
     socketId = client.id;
-    let token = client.handshake.query.token;
-    let decoded = this.jwtService.verify(token as string);
+    const token = client.handshake.query.token;
+    const decoded = this.jwtService.verify(token as string);
     userId = decoded.sub;
     userIdSocketId.set(userId, socketId);
   }
-  // here i have to decode the jwt and get nickName
   @SubscribeMessage('message')
   handleMessage(@ConnectedSocket() client: Socket, @MessageBody() body) {
-    let clientSocketId: string = client.id;
-    let clientId: any = findKeyFromValue(userIdSocketId, clientSocketId);
+    const clientSocketId: string = client.id;
+    const clientId: any = findKeyFromValue(userIdSocketId, clientSocketId);
     const decodeToken = this.jwtService.verify(body.fromToken as string);
     const nickName = decodeToken.username;
-    let receiverId: UUID = body.toUserId;
-    let content: any = body.message;
-    let receiverSocketId: string = userIdSocketId.get(receiverId);
-    let currentTime: Date = new Date();
+    const receiverId: UUID = body.toUserId;
+    const content: any = body.message;
+    const receiverSocketId: string = userIdSocketId.get(receiverId);
+    const currentTime: Date = new Date();
     const toUser = body.toUser;
 
     const payload: Payload = {
@@ -81,7 +80,7 @@ export class ChatGateway {
     }
   }
   @SubscribeMessage('removeAccount')
-  handleRemoveAccount(@MessageBody() body){
+  handleRemoveAccount(@MessageBody() body) {
     const removeId = body.accountId;
     this.server.emit('removeAccount', removeId);
   }

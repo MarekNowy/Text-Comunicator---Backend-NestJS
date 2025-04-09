@@ -1,4 +1,3 @@
-import { IsOptional } from 'class-validator';
 import { UUID } from 'crypto';
 import {
   Entity,

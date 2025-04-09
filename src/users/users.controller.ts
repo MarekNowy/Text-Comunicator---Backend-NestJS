@@ -1,4 +1,4 @@
-import { Controller, Get, Injectable, Param, Request } from '@nestjs/common';
+import { Controller, Get, Request } from '@nestjs/common';
 import { Post, Body, Delete, Patch } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUsersDto } from './DTO/create-users.dto';
@@ -7,16 +7,13 @@ import {
   ApiConflictResponse,
   ApiResponse,
   ApiBody,
-  ApiProperty,
   ApiHeader,
 } from '@nestjs/swagger';
 import { UserEntity } from './users.entity';
-import { ExampleLogin } from './ExampleData/ExampleUserLogin';
 import { ChangeNickNameDto } from './DTO/change-nickName.dto';
 import { Public } from 'src/auth/decorator/publicDecorator';
 import { UUID } from 'crypto';
-import passport from 'passport';
-import { MessagesService } from 'src/messages/messages.service';
+
 
 @Controller('users')
 export class UsersController {
