@@ -11,3 +11,10 @@ export const InterlocutorIdParam = {
   type: String,
   example: '0daca3f6-094e-4340-b1bf-18ed2329c2f9',
 };
+
+export const PageParam = {
+  name: 'page',
+  description: 'how many pages to download, every page has 20 messages',
+  type: Number,
+  example: 3,
+};

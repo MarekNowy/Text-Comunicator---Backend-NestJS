@@ -10,6 +10,8 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { ChatModule } from './chat/chat.module';
 import { ChatGateway } from './chat/chat-gateway';
+import { UsersService } from './users/users.service';
+import { MessagesService } from './messages/messages.service';
 
 @Module({
   imports: [
@@ -30,8 +32,6 @@ import { ChatGateway } from './chat/chat-gateway';
     ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService,
-    ChatGateway
-  ],
+  providers: [AppService],
 })
 export class AppModule {}

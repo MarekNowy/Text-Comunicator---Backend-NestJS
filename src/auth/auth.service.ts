@@ -1,18 +1,34 @@
-import {
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { console } from 'inspector';
 import { ConfigService } from '@nestjs/config';
+
+interface BlackToken {
+  token: string;
+  expireIn: number;
+}
+const blackList: BlackToken[] = [];
+
+const removeObsoleteToken = () => {
+  const miliseconds = Date.now();
+  const seconds = Math.floor(miliseconds / 1000);
+  for (let i = 0; i < blackList.length; i++) {
+    if (blackList[i].expireIn <= seconds) {
+      blackList.splice(i, 1);
+    }
+  }
+};
+
+export const isTokenBlackListed = (token: string) => {
+  return blackList.some((blackToken) => blackToken.token === token);
+};
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UsersService,
     private jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   async signIn(email: string, pass: string): Promise<any> {
@@ -40,12 +56,23 @@ export class AuthService {
     }
     const newAccessToken = await this.jwtService.signAsync(newPayload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: this.configService.get<string>('ACCESS_EXPIRES')
+      expiresIn: this.configService.get<string>('ACCESS_EXPIRES'),
     });
     const newRefreshToken = await this.jwtService.signAsync(newPayload, {
       secret: process.env.JWT_SECRET,
-      expiresIn: this.configService.get<string>(`REFRESH_EXPIRES`)
+      expiresIn: this.configService.get<string>(`REFRESH_EXPIRES`),
     });
     return newAccessToken;
+  }
+
+  async logOut(token: string) {
+    removeObsoleteToken();
+    const decoded = await this.jwtService.decode(token);
+    const expireIn = decoded['exp'];
+    const blackToken: BlackToken = {
+      token: token,
+      expireIn: expireIn,
+    };
+    blackList.push(blackToken);
   }
 }

@@ -7,15 +7,18 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './users.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { UUID } from 'crypto';
+import { MessagesEntity } from 'src/messages/messages.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(UserEntity)
     private userRepository: Repository<UserEntity>,
+    @InjectRepository(MessagesEntity)
+    private messagesRepository: Repository<MessagesEntity>,
   ) {}
 
   async getInfo(UserId: UUID) {
@@ -27,7 +30,7 @@ export class UsersService {
   }
 
   async create(nickName: string, email: string, password: string) {
-    const hashedPassword:string = await bcrypt.hash(password, 10);
+    const hashedPassword: string = await bcrypt.hash(password, 10);
     const newUser = this.userRepository.create({
       nickName: nickName,
       email: email,
@@ -62,9 +65,10 @@ export class UsersService {
     }
   }
 
-  async deleteAccount(email: string, password: string) {
+  async deleteAccount(userId: UUID, email: string, password: string) {
     const userToRemove = await this.userRepository.findOne({
       where: {
+        id: userId,
         email: email,
       },
     });
@@ -80,7 +84,18 @@ export class UsersService {
     if (!areSamePasswords) {
       throw new ForbiddenException();
     }
-    await this.userRepository.delete({ id: userToRemove?.id });
+
+    try {
+      await this.messagesRepository
+        .createQueryBuilder()
+        .delete()
+        .from(MessagesEntity)
+        .where('senderId = :userId OR receiverId = :userId', { userId })
+        .execute();
+      await this.userRepository.delete({ id: userToRemove?.id });
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   async changeNickName(newNickName: string, userId: UUID) {
@@ -98,5 +113,35 @@ export class UsersService {
     return await this.userRepository.update(userToUpdate.id, {
       nickName: newNickName,
     });
+  }
+  async showUsers(nickName: string) {
+    if (nickName) {
+      const users = await this.userRepository.find({
+        where: {
+          nickName: Like(`${nickName}%`),
+        },
+        select: ['id', 'nickName', 'email'],
+      });
+      return users;
+    }
+  }
+  async showStats(myId: UUID) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: myId,
+      },
+    });
+    const howManyMessages = await this.messagesRepository.count({
+      where: {
+        senderId: myId,
+      },
+    });
+    return {
+      id: user?.id,
+      email: user?.email,
+      nickName: user?.nickName,
+      howManyMessages: howManyMessages,
+      registerAt: user?.registerAt,
+    };
   }
 }

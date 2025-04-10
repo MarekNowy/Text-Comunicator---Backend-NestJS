@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsString, MaxLength, MinLength } from 'class-validator';
 
 export class ChangeNickNameDto {
   @ApiProperty({
@@ -11,5 +11,4 @@ export class ChangeNickNameDto {
   @MinLength(4)
   @MaxLength(14)
   newNickName: string;
-  
 }
