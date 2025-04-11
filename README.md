@@ -33,10 +33,8 @@ cd Text-Comunicator---Backend-NestJS
 
 # 2. Install dependencies
 npm install
-
-# 3. Configure environment variables
-cp .env.example .env
 ```
+create .env file
 
 In the `.env` file, define the following variables:
 
